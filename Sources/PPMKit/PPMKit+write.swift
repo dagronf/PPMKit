@@ -31,14 +31,13 @@ public extension PPM {
 	///   - cgImage: The image to convert
 	///   - format: The PPM format
 	/// - Returns: The raw PPM Data
-
 	static func writeData(_ data: ImageData, format: Format) throws -> Data {
 		var str = format == .P3 ? "P3\n" : "P6\n"
 		str += "\(data.width) \(data.height) 255\n"
 
 		if format == .P3 {
-			for datum in data.data {
-				str += "\(datum) "
+			for rgb in data.data {
+				str += "\(rgb.r) \(rgb.g) \(rgb.b)\n"
 			}
 
 			guard let data = str.data(using: .ascii) else {
@@ -51,8 +50,10 @@ public extension PPM {
 				throw ErrorType.unableToCreateString
 			}
 			var result = Data(d)
-			for datum in data.data.enumerated() {
-				result.append(datum.element)
+			for datum in data.data {
+				result.append(datum.r)
+				result.append(datum.g)
+				result.append(datum.b)
 			}
 			return result
 		}

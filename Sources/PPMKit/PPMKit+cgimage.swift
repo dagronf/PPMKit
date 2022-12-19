@@ -40,10 +40,10 @@ public extension PPM {
 	/// Read a CGImage from PPM data. Handles both P3 and P6 formats
 	static func readImage(_ data: Data) throws -> CGImage {
 		// Read the raw PPM data
-		let ppmData = try Self.readData(data)
+		let ppmData = try Self.readImageData(data)
 
 		// Convert the raw data to an image
-		guard let provider = CGDataProvider(data: ppmData.data as CFData) else {
+		guard let provider = CGDataProvider(data: ppmData.rawBytes() as CFData) else {
 			throw ErrorType.invalidPPMData
 		}
 

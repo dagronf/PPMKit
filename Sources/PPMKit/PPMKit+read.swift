@@ -29,15 +29,15 @@ public extension PPM {
 	/// Load a CGImage from a PPM Data. Handles both P3 and P6 formats
 	/// - Parameter fileURL: The file containing the PPM data
 	/// - Returns: PPM data
-	@inlinable static func readFileURL(_ fileURL: URL) throws -> ImageData {
+	@inlinable static func readImageData(_ fileURL: URL) throws -> ImageData {
 		let data = try Data(contentsOf: fileURL)
-		return try Self.readData(data)
+		return try Self.readImageData(data)
 	}
 
 	/// Load a CGImage from PPM data. Handles both P3 and P6 formats
 	/// - Parameter data: The data containing the PPM data
 	/// - Returns: raw
-	static func readData(_ data: Data) throws -> ImageData {
+	static func readImageData(_ data: Data) throws -> ImageData {
 		var width = -1
 		var height = -1
 		var levels = -1
@@ -160,10 +160,13 @@ public extension PPM {
 			throw ErrorType.mismatchWidthHeightAndContent(width: width, height: height, actualByteCount: rawData.count)
 		}
 
-		let ll = Double(levels)
+		let levelsValue = Double(levels)
 		
 		// Convert to 0->255 levels
-		let mapped = Data(rawData.map { UInt8((Double($0) / ll) * 255) })
-		return ImageData(data: mapped, width: width, height: height)
+		let mappedData = rawData.map {
+			let map = UInt8((Double($0) / levelsValue) * 255)
+			return max(0, min(255, map))
+		}
+		return try ImageData(rawBytes: Data(mappedData), width: width, height: height)
 	}
 }

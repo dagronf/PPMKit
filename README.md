@@ -2,6 +2,14 @@
 
 Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux).
 
+<p align="center">
+    <img src="https://img.shields.io/github/v/tag/dagronf/PPMKit" />
+    <img src="https://img.shields.io/badge/License-MIT-lightgrey" />
+    <a href="https://swift.org/package-manager">
+        <img src="https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
+    </a>
+</p>
+
 ## Read a PPM file
 
 ### Load a PPM file as a CGImage

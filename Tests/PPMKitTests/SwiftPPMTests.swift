@@ -116,15 +116,27 @@ final class SwiftPPMDataOnlyTests: XCTestCase {
 	func testCommentFail() throws {
 		let ppm6URL = try! XCTUnwrap(Bundle.module.url(forResource: "P3_3x2_L255_comment_fail", withExtension: "ppm"))
 
-		let im = try XCTUnwrap(PPM.readFileURL(ppm6URL))
+		let im = try XCTUnwrap(PPM.readImageData(ppm6URL))
 		XCTAssertEqual(3, im.width)
 		XCTAssertEqual(2, im.height)
-		XCTAssertEqual(3 * 2 * 3, im.data.count)
+		XCTAssertEqual(3 * 2, im.data.count)
 	}
 
 	func testInvalidContent() throws {
 		let ppm6URL = try! XCTUnwrap(Bundle.module.url(forResource: "badly_formatted", withExtension: "ppm"))
 
-		XCTAssertThrowsError(try PPM.readFileURL(ppm6URL))
+		XCTAssertThrowsError(try PPM.readImageData(ppm6URL))
+	}
+
+	func testWriteData_p3() throws {
+		let data = try PPM.readImageData(ppm3URL)
+		let ppmData = try PPM.writeData(data, format: .P3)
+		try ppmData.write(to: URL(string: "file:///tmp/writtenrawdata_p3.ppm")!)
+	}
+
+	func testWriteData_p6() throws {
+		let data = try PPM.readImageData(ppm3URL)
+		let ppmData = try PPM.writeData(data, format: .P6)
+		try ppmData.write(to: URL(string: "file:///tmp/writtenrawdata_p6.ppm")!)
 	}
 }

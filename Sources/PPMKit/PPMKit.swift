@@ -28,7 +28,7 @@
 
 import Foundation
 
-final public class PPM {
+public final class PPM {
 	private init() {}
 
 	/// Writing formats
@@ -51,15 +51,57 @@ final public class PPM {
 		case cannotCreateImage
 		case unableToCreateString
 		case unexpectedRawContentCode
+		case invalidDimensionsForData
+	}
+
+	/// An RGB pixel representation
+	public struct RGB {
+		/// red component
+		public let r: UInt8
+		/// green component
+		public let g: UInt8
+		/// blue component
+		public let b: UInt8
 	}
 
 	/// Raw image data
 	public struct ImageData {
 		/// Raw RGB byte array
-		public let data: Data
+		public let data: [PPM.RGB]
 		/// Image width (in pixels)
 		public let width: Int
 		/// Image height (in pixels)
 		public let height: Int
+
+		/// Return the pixel data as a raw RGB byte array
+		public func rawBytes() -> Data {
+			Data(self.data.flatMap { [$0.r, $0.g, $0.b] })
+		}
+
+		init(rgbData: [PPM.RGB], width: Int, height: Int) throws {
+			if rgbData.count != (width * height) {
+				throw ErrorType.invalidDimensionsForData
+			}
+			self.data = rgbData
+			self.width = width
+			self.height = height
+		}
+
+		/// Create imagedata from a raw RGB array
+		init(rawBytes: Data, width: Int, height: Int) throws {
+			if rawBytes.count != (width * height * 3) {
+				throw ErrorType.invalidDimensionsForData
+			}
+
+			var result: [PPM.RGB] = []
+			result.reserveCapacity(width * height)
+			for step in stride(from: 0, to: rawBytes.count, by: 3) {
+				result.append(RGB(r: rawBytes[step], g: rawBytes[step + 1], b: rawBytes[step + 2]))
+			}
+
+			self.width = width
+			self.height = height
+			self.data = result
+		}
 	}
 }
