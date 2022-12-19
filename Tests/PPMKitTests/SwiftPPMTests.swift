@@ -100,7 +100,6 @@ final class SwiftPPMTests: XCTestCase {
 		let p6Data = try PPM.writeImage(cg1, format: .P6)
 		try p6Data.write(to: URL(string: "file:///tmp/gps-image-p6.ppm")!)
 
-
 		let reloaded = try PPM.readImage(p3Data)
 		XCTAssertEqual(origW, reloaded.width)
 		XCTAssertEqual(origH, reloaded.height)
@@ -117,7 +116,7 @@ final class SwiftPPMTests: XCTestCase {
 final class SwiftPPMDataOnlyTests: XCTestCase {
 
 	func testP3_4x4_L16() throws {
-		let im = try XCTUnwrap(PPM.readData(ppm1URL))
+		let im = try XCTUnwrap(PPM.readFileURL(ppm1URL))
 		XCTAssertEqual(4, im.width)
 		XCTAssertEqual(4, im.height)
 		XCTAssertEqual(4 * 4 * 3, im.data.count)

@@ -30,7 +30,7 @@ public extension PPM {
 	/// Load a CGImage from a PPM Data. Handles both P3 and P6 formats
 	/// - Parameter fileURL: The file containing the PPM data
 	/// - Returns: PPM data
-	@inlinable static func readData(_ fileURL: URL) throws -> ImageData {
+	@inlinable static func readFileURL(_ fileURL: URL) throws -> ImageData {
 		let data = try Data(contentsOf: fileURL)
 		return try Self.readData(data)
 	}
@@ -135,7 +135,10 @@ public extension PPM {
 				// If we got here, its a token
 				inToken = true
 				var c = current
-				currentToken += String(data: Data(bytes: &c, count: 1), encoding: .ascii)!
+				guard let charS = String(data: Data(bytes: &c, count: 1), encoding: .ascii) else {
+					throw ErrorType.invalidData
+				}
+				currentToken += charS
 			}
 
 			index += 1

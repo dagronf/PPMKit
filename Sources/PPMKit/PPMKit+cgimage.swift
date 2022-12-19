@@ -28,14 +28,16 @@
 import CoreGraphics
 import Foundation
 
+// MARK: - Reading CGImages
+
 public extension PPM {
-	/// Load a CGImage from a PPM file. Handles both P3 and P6 formats
+	/// Read a CGImage from a PPM file. Handles both P3 and P6 formats
 	@inlinable static func readImage(_ fileURL: URL) throws -> CGImage {
 		let data = try Data(contentsOf: fileURL)
 		return try Self.readImage(data)
 	}
 
-	/// Load a CGImage from PPM data. Handles both P3 and P6 formats
+	/// Read a CGImage from PPM data. Handles both P3 and P6 formats
 	static func readImage(_ data: Data) throws -> CGImage {
 		// Read the raw PPM data
 		let ppmData = try Self.readData(data)
@@ -66,13 +68,15 @@ public extension PPM {
 	}
 }
 
+// MARK: - Writing CGImages
+
 public extension PPM {
 	/// Write a CGImage to a file
 	/// - Parameters:
 	///   - cgImage: The image to write
 	///   - fileURL: The file to write to
 	///   - format: The PPM file format
-	@inlinable static func write(_ cgImage: CGImage, to fileURL: URL, format: Format) throws {
+	@inlinable static func writeImage(_ cgImage: CGImage, to fileURL: URL, format: Format) throws {
 		let data = try Self.writeImage(cgImage, format: format)
 		try data.write(to: fileURL)
 	}
