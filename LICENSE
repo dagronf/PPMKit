@@ -1,25 +1,3 @@
-# PPMKit
-
-Simple read/write PPM files in Swift (macOS, iOS, tvOS, watchOS)
-
-## Load a PPM file as a CGImage
-
-```swift
-let ppmData = Data(...)
-let cgImage = try PPM.load(ppmData)
-```
-
-## Write a CGImage to a PPM file
-
-NOTE: PPM doesn't support transparency, so any transparency information is lost.
-
-```swift
-let cgImage = CGImage(...)
-let data = try PPM.write(cgImage, format: .P3)
-```
-
-# License
-
 MIT License
 
 Copyright (c) 2022 Darren Ford
