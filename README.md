@@ -1,8 +1,8 @@
 # PPMKit
 
-Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux)
+Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux).
 
-## Load
+## Read a PPM file
 
 ### Load a PPM file as a CGImage
 
@@ -20,7 +20,7 @@ let imageData = try PPM.readFileURL(ppm1URL)
 // rawRGBBytes = imageData.data 
 ```
 
-## Write
+## Write a PPM file
 
 ### Write a CGImage to a PPM file
 
@@ -35,7 +35,7 @@ let data = try PPM.write(cgImage, format: .P3)
 
 ```swift
 let imageData = PPM.ImageData(...)
-let data = try PPM.writeRawPPMImageData(data: imageData, format: .P3)
+let data = try PPM.writeData(data: imageData, format: .P3)
 ```
 
 # License

@@ -39,19 +39,18 @@ final public class PPM {
 
 	/// Errors throws
 	public enum ErrorType: Error {
-		case invalidFileURL
-		case invalidFileEncoding
-		case invalidPPMHeaderType
+		case invalidPPMHeaderType(actualBOM: String)
 		case invalidData
-		case invalidWidth
-		case invalidHeight
-		case invalidLevels
-		case invalidImage
-		case invalidImageContent
-		case mismatchWidthHeightAndContent
+		case invalidWidth(actualWidthString: String)
+		case invalidHeight(actualHeightString: String)
+		case invalidLevels(actualLevelsString: String)
+		case cannotConvertImageToByteArray
+		case invalidImageContent(actualValueString: String)
+		case mismatchWidthHeightAndContent(width: Int, height: Int, actualByteCount: Int)
 		case invalidPPMData
 		case cannotCreateImage
 		case unableToCreateString
+		case unexpectedRawContentCode
 	}
 
 	/// Raw image data

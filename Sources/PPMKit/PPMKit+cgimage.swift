@@ -89,26 +89,17 @@ public extension PPM {
 	static func writeImage(_ cgImage: CGImage, format: Format) throws -> Data {
 		let rawData = cgImage.toByteArrayRGBA()
 		guard rawData.count > 0 else {
-			throw ErrorType.invalidImage
+			throw ErrorType.cannotConvertImageToByteArray
 		}
 
 		var str = format == .P3 ? "P3\n" : "P6\n"
 		str += "\(cgImage.width) \(cgImage.height) 255\n"
 
 		if format == .P3 {
-			var offset = 0
-			for datum in rawData.enumerated() {
-				if offset == 3 {
-					// Ignore alpha components
-					str += "\n"
-					offset = 0
-				}
-				else {
-					str += "\(datum.element) "
-					offset += 1
-				}
+			// Append the data values, skipping the alpha component
+			for offset in stride(from: 0, to: rawData.count, by: 4) {
+				str += "\(rawData[offset]) \(rawData[offset + 1]) \(rawData[offset + 2])\n"
 			}
-
 			guard let data = str.data(using: .ascii) else {
 				throw ErrorType.unableToCreateString
 			}
@@ -119,16 +110,11 @@ public extension PPM {
 				throw ErrorType.unableToCreateString
 			}
 			var result = Data(d)
-			var offset = 0
-			for datum in rawData.enumerated() {
-				if offset == 3 {
-					// Ignore alpha components
-					offset = 0
-				}
-				else {
-					result.append(datum.element)
-					offset += 1
-				}
+			// Append the raw data bytes, skipping the alpha component
+			for offset in stride(from: 0, to: rawData.count, by: 4) {
+				result.append(rawData[offset])
+				result.append(rawData[offset+1])
+				result.append(rawData[offset+2])
 			}
 			return result
 		}

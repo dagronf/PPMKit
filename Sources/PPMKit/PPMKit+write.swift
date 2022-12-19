@@ -23,7 +23,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-//import CoreGraphics
 import Foundation
 
 public extension PPM {
@@ -33,7 +32,7 @@ public extension PPM {
 	///   - format: The PPM format
 	/// - Returns: The raw PPM Data
 
-	static func writeRawPPMImageData(data: ImageData, format: Format) throws -> Data {
+	static func writeData(_ data: ImageData, format: Format) throws -> Data {
 		var str = format == .P3 ? "P3\n" : "P6\n"
 		str += "\(data.width) \(data.height) 255\n"
 

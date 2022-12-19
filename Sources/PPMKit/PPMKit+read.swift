@@ -23,7 +23,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-//import CoreGraphics
 import Foundation
 
 public extension PPM {
@@ -64,26 +63,33 @@ public extension PPM {
 		var currentToken = ""
 
 		while index < data.count {
-			let current = data[index]
+			let currentByte = data[index]
 
 			if currentState == .rawContent && format == .P6 {
-				rawData.append(Int(current))
+				// We're reading raw content - just loop to the end of the file
+				rawData.append(Int(currentByte))
+			}
+			else if currentByte == 0x0D /* "\r" */ {
+				// Ignore LR
 			}
 			else if inComment {
 				// Comment runs to the end of the line
-				if current ==  0x0A {
+				if currentByte == 0x0A /* "\n" */ {
 					inComment = false
 				}
 			}
-			else if current == 0x23 { //}"#" {
+			else if currentByte == 0x23 /* "#" */ {
 				// Read to the end of the line
 				inComment = true
 			}
-			else if current == 0x0A /*"\n"*/ || current == 0x20 /*" "*/ {
+			else if currentByte == 0x0A /* "\n" */ || currentByte == 0x20 /* " " */ {
+				// End of a token, or end of a comment
 				if inComment {
+					// End of a comment
 					inComment = false
 				}
 				else if inToken {
+					// The end of a token
 					inToken = false
 
 					switch currentState {
@@ -92,24 +98,27 @@ public extension PPM {
 						case "P3": format = .P3
 						case "P6": format = .P6
 						default:
-							throw ErrorType.invalidPPMHeaderType
+							throw ErrorType.invalidPPMHeaderType(actualBOM: currentToken)
 						}
 						currentState = .width
 					case .width:
+						// Current token is the width
 						guard let w = Int(currentToken) else {
-							throw ErrorType.invalidWidth
+							throw ErrorType.invalidWidth(actualWidthString: currentToken)
 						}
 						width = w
 						currentState = .height
 					case .height:
+						// Current token is the height
 						guard let h = Int(currentToken) else {
-							throw ErrorType.invalidHeight
+							throw ErrorType.invalidHeight(actualHeightString: currentToken)
 						}
 						height = h
 						currentState = .levels
 					case .levels:
+						// Current token is the level
 						guard let l = Int(currentToken) else {
-							throw ErrorType.invalidLevels
+							throw ErrorType.invalidLevels(actualLevelsString: currentToken)
 						}
 						levels = l
 						if format == .P3 {
@@ -119,13 +128,16 @@ public extension PPM {
 							currentState = .rawContent
 						}
 					case .content:
+						// P3 - text basic byte values
 						assert(format == .P3)
 						guard let v = Int(currentToken) else {
-							throw ErrorType.invalidImageContent
+							throw ErrorType.invalidImageContent(actualValueString: currentToken)
 						}
 						rawData.append(v)
 					case .rawContent:
-						fatalError()
+						// Shouldn't get here - it should have been hijacked earlier
+						assert(false, "Shouldn't get here")
+						throw ErrorType.unexpectedRawContentCode
 					}
 
 					currentToken = ""
@@ -134,8 +146,7 @@ public extension PPM {
 			else {
 				// If we got here, its a token
 				inToken = true
-				var c = current
-				guard let charS = String(data: Data(bytes: &c, count: 1), encoding: .ascii) else {
+				guard let charS = String(data: Data([currentByte]), encoding: .ascii) else {
 					throw ErrorType.invalidData
 				}
 				currentToken += charS
@@ -144,8 +155,9 @@ public extension PPM {
 			index += 1
 		}
 
+		// Validate the content
 		guard width * height * 3 == rawData.count else {
-			throw ErrorType.mismatchWidthHeightAndContent
+			throw ErrorType.mismatchWidthHeightAndContent(width: width, height: height, actualByteCount: rawData.count)
 		}
 
 		let ll = Double(levels)
