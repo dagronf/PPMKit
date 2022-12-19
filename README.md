@@ -1,6 +1,6 @@
 # PPMKit
 
-Simple read/write PPM files in Swift (macOS, iOS, tvOS, watchOS)
+Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux)
 
 ## Load a PPM file as a CGImage
 
