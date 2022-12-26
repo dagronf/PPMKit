@@ -38,21 +38,27 @@ public extension PPM {
 	}
 
 	/// Read a CGImage from PPM data. Handles both P3 and P6 formats
-	static func readImage(_ data: Data) throws -> CGImage {
+	@inlinable static func readImage(_ data: Data) throws -> CGImage {
 		// Read the raw PPM data
 		let ppmData = try Self.readImageData(data)
+		return try Self.image(from: ppmData)
+	}
 
+	/// Read a CGImage from PPM ImageData
+	/// - Parameter imageData: Raw PPM image data
+	/// - Returns: A CGImage representation
+	static func image(from imageData: PPM.ImageData) throws -> CGImage {
 		// Convert the raw data to an image
-		guard let provider = CGDataProvider(data: ppmData.rawBytes() as CFData) else {
+		guard let provider = CGDataProvider(data: imageData.rawBytes() as CFData) else {
 			throw ErrorType.invalidPPMData
 		}
 
 		guard let cgImage = CGImage(
-			width: ppmData.width,
-			height: ppmData.height,
+			width: imageData.width,
+			height: imageData.height,
 			bitsPerComponent: 8,
 			bitsPerPixel: 24,
-			bytesPerRow: ppmData.width * 3,
+			bytesPerRow: imageData.width * 3,
 			space: CGColorSpaceCreateDeviceRGB(),
 			bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
 			provider: provider,
@@ -87,39 +93,25 @@ public extension PPM {
 	///   - format: The PPM format to use (P3, P6)
 	/// - Returns: Raw PPM data
 	static func writeImage(_ cgImage: CGImage, format: Format) throws -> Data {
+		// Get the raw RGBA data from the image
 		let rawData = cgImage.toByteArrayRGBA()
 		guard rawData.count > 0 else {
 			throw ErrorType.cannotConvertImageToByteArray
 		}
 
-		var str = format == .P3 ? "P3\n" : "P6\n"
-		str += "\(cgImage.width) \(cgImage.height) 255\n"
+		// Convert from RGBA bytes to [PPM.RGB]
+		var rgbData: [PPM.RGB] = []
+		rgbData.reserveCapacity(rawData.count)
+		for offset in stride(from: 0, to: rawData.count, by: 4) {
+			rgbData.append(PPM.RGB(r: rawData[offset], g: rawData[offset+1], b: rawData[offset+2]))
+		}
 
-		if format == .P3 {
-			// Append the data values, skipping the alpha component
-			for offset in stride(from: 0, to: rawData.count, by: 4) {
-				str += "\(rawData[offset]) \(rawData[offset + 1]) \(rawData[offset + 2])\n"
-			}
-			guard let data = str.data(using: .ascii) else {
-				throw ErrorType.unableToCreateString
-			}
-			return data
-		}
-		else {
-			guard let d = str.data(using: .ascii) else {
-				throw ErrorType.unableToCreateString
-			}
-			var result = Data(d)
-			// Append the raw data bytes, skipping the alpha component
-			for offset in stride(from: 0, to: rawData.count, by: 4) {
-				result.append(rawData[offset])
-				result.append(rawData[offset+1])
-				result.append(rawData[offset+2])
-			}
-			return result
-		}
+		// Now write the data
+		return try self.writeData(
+			try ImageData(rgbData: rgbData, width: cgImage.width, height: cgImage.height),
+			format: format
+		)
 	}
-
 }
 
 internal extension CGImage {

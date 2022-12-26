@@ -63,6 +63,7 @@ public extension PPM {
 		var currentToken = ""
 
 		while index < data.count {
+
 			let currentByte = data[index]
 
 			if currentState == .rawContent && format == .P6 {

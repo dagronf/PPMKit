@@ -47,7 +47,7 @@ extension NSImage {
 import UIKit
 extension UIImage {
 	convenience init?(ppmData: Data) {
-		guard let cgImage = try? PPM.read(ppmData) else {
+		guard let cgImage = try? PPM.readImage(ppmData) else {
 			return nil
 		}
 		self.init(cgImage: cgImage)

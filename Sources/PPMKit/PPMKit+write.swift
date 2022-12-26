@@ -36,8 +36,8 @@ public extension PPM {
 		str += "\(data.width) \(data.height) 255\n"
 
 		if format == .P3 {
-			for rgb in data.data {
-				str += "\(rgb.r) \(rgb.g) \(rgb.b)\n"
+			for rgb in data.data.enumerated() {
+				str += "\(rgb.1.r) \(rgb.1.g) \(rgb.1.b)\n"
 			}
 
 			guard let data = str.data(using: .ascii) else {
