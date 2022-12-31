@@ -29,16 +29,32 @@ import Foundation
 
 import AppKit
 public extension NSImage {
+	/// Create an NSImage from a PPM.ImageData
+	convenience init?(ppmImageData: PPM.ImageData) {
+		guard let cgImage = try? ppmImageData.cgImage() else { return nil }
+		self.init(
+			cgImage: cgImage,
+			size: NSSize(width: ppmImageData.width, height: ppmImageData.height)
+		)
+	}
+
 	/// Load an NSImage from PPM data
 	convenience init?(ppmData: Data) {
-		guard let cgImage = try? PPM.readImage(data: ppmData) else {
-			return nil
-		}
-
+		guard let cgImage = try? PPM.readImage(data: ppmData) else { return nil }
 		self.init(
 			cgImage: cgImage,
 			size: CGSize(width: cgImage.width, height: cgImage.height)
 		)
+	}
+
+	/// Returns PPM data in the specified format for the image
+	func ppmData(format: PPM.Format) throws -> Data {
+		guard
+			let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil)
+		else {
+			throw PPM.ErrorType.cannotCreateImage
+		}
+		return try PPM.writeImage(cgImage, format: format)
 	}
 }
 
@@ -46,11 +62,27 @@ public extension NSImage {
 
 import UIKit
 public extension UIImage {
+
+	/// Create a UIImage from a PPM.ImageData
+	convenience init?(ppmImageData: PPM.ImageData) {
+		guard let cgImage = try? ppmImageData.cgImage() else { return nil }
+		self.init(cgImage: cgImage)
+	}
+
+	/// Create a UIImage from raw image data
 	convenience init?(ppmData: Data) {
 		guard let cgImage = try? PPM.readImage(data: ppmData) else {
 			return nil
 		}
 		self.init(cgImage: cgImage)
+	}
+
+	/// Returns PPM data in the specified format for this image
+	func ppmData(format: PPM.Format) throws -> Data {
+		guard let cgImage = self.cgImage else {
+			throw PPM.ErrorType.cannotCreateImage
+		}
+		return try PPM.writeImage(cgImage, format: format)
 	}
 }
 

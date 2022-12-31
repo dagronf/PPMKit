@@ -115,6 +115,13 @@ public extension PPM {
 	}
 }
 
+public extension PPM.ImageData {
+	/// Return a CGImage representation of this PPM image
+	@inlinable func cgImage() throws -> CGImage {
+		try PPM.readImage(imageData: self)
+	}
+}
+
 internal extension CGImage {
 	/// Convert a CGImage to an RGBA array
 	func toByteArrayRGBA() -> [UInt8] {

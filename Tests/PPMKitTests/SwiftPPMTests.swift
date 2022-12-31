@@ -9,9 +9,87 @@ let ppm3URL = try! XCTUnwrap(Bundle.module.url(forResource: "P6_4x4_L255", withE
 let ppm4URL = try! XCTUnwrap(Bundle.module.url(forResource: "sample_640×426", withExtension: "ppm"))
 let ppm5URL = try! XCTUnwrap(Bundle.module.url(forResource: "P6_320x200_L255", withExtension: "ppm"))
 
-#if !os(Linux)
+#if os(macOS)
+import AppKit
+#elseif os(iOS) || os(tvOS) || os(watchOS)
+import UIKit
+#endif
 
-final class SwiftPPMTests: XCTestCase {
+final class SwiftPPMTestsUsingImageDataOnly: XCTestCase {
+	func testSimpleP3_4x4() throws {
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm1URL))
+		XCTAssertEqual(4, im.width)
+		XCTAssertEqual(4, im.height)
+
+		let data = try XCTUnwrap(im.ppmData(format: .P3))
+		let imd2 = try XCTUnwrap(PPM.read(data: data))
+		XCTAssertEqual(4, imd2.width)
+		XCTAssertEqual(4, imd2.height)
+	}
+
+	func testSimpleP3_3x2() throws {
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm2URL))
+		XCTAssertEqual(3, im.width)
+		XCTAssertEqual(2, im.height)
+
+		// Store as PPM data
+		let data = try XCTUnwrap(im.ppmData(format: .P3))
+
+		// Load from saved data
+		let imd2 = try XCTUnwrap(PPM.read(data: data))
+
+		XCTAssertEqual(3, imd2.width)
+		XCTAssertEqual(2, imd2.height)
+	}
+
+	func testSimpleP6Example() throws {
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm3URL))
+		XCTAssertEqual(4, im.width)
+		XCTAssertEqual(4, im.height)
+
+		let sdata = try XCTUnwrap(im.ppmData(format: .P6))
+		let imd2 = try XCTUnwrap(PPM.read(data: sdata))
+
+		XCTAssertEqual(4, imd2.width)
+		XCTAssertEqual(4, imd2.height)
+	}
+
+	func testSimpleP6Example2() throws {
+		// 640 426
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm4URL))
+		XCTAssertEqual(640, im.width)
+		XCTAssertEqual(426, im.height)
+
+		let sdata = try XCTUnwrap(im.ppmData(format: .P6))
+		let imd2 = try XCTUnwrap(PPM.read(data: sdata))
+
+		XCTAssertEqual(640, imd2.width)
+		XCTAssertEqual(426, imd2.height)
+	}
+
+	func testSimpleP6Example3() throws {
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm5URL))
+		XCTAssertEqual(320, im.width)
+		XCTAssertEqual(200, im.height)
+
+		let sdata = try XCTUnwrap(im.ppmData(format: .P6))
+		let imd2 = try XCTUnwrap(PPM.read(data: sdata))
+
+		XCTAssertEqual(320, imd2.width)
+		XCTAssertEqual(200, imd2.height)
+
+		// Convert to p3
+		let sdata_p3 = try XCTUnwrap(im.ppmData(format: .P3))
+		// Check that we can re-load
+		let imd_p3 = try XCTUnwrap(PPM.read(data: sdata_p3))
+		XCTAssertEqual(320, imd_p3.width)
+		XCTAssertEqual(200, imd_p3.height)
+	}
+}
+
+#if canImport(CoreGraphics)
+
+final class SwiftPPMTestsCoreGraphics: XCTestCase {
 	func testSimpleP3_4x4() throws {
 		let im = try XCTUnwrap(PPM.readImage(fileURL: ppm1URL))
 		XCTAssertEqual(4, im.width)
@@ -82,11 +160,15 @@ final class SwiftPPMTests: XCTestCase {
 		XCTAssertEqual(200, imd_p3.height)
 	}
 
-	#if os(macOS)
 	func testSimpleJPEG() throws {
 		let jpegURL = try! XCTUnwrap(Bundle.module.url(forResource: "gps-image", withExtension: "jpg"))
-		let image = NSImage(contentsOf: jpegURL)!
-		let cg1 = image.cgImage(forProposedRect: nil, context: nil, hints: nil)!
+		#if os(macOS)
+		let image = try XCTUnwrap(NSImage(contentsOf: jpegURL))
+		let cg1 = try XCTUnwrap(image.cgImage(forProposedRect: nil, context: nil, hints: nil))
+		#else
+		let image = try XCTUnwrap(UIImage(contentsOfFile: jpegURL.path))
+		let cg1 = try XCTUnwrap(image.cgImage)
+		#endif
 		let origW = cg1.width
 		let origH = cg1.height
 
@@ -107,7 +189,6 @@ final class SwiftPPMTests: XCTestCase {
 		XCTAssertEqual(origW, reloaded2.width)
 		XCTAssertEqual(origH, reloaded2.height)
 	}
-	#endif
 }
 
 #endif

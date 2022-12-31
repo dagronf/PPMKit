@@ -50,12 +50,12 @@ public extension PPM {
 		/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
 		@inlinable public func pixelAt(row: Int, column: Int) throws -> PPM.RGB {
 			guard
-				row >= 0, row < height,
-				column >= 0, column < width
+				row >= 0, row < self.height,
+				column >= 0, column < self.width
 			else {
 				throw PPM.ErrorType.invalidRowOrColumn
 			}
-			return data[(row * width) + column]
+			return self.data[(row * self.width) + column]
 		}
 
 		/// Return the pixel data as a raw RGB byte array
@@ -148,7 +148,6 @@ public extension PPM.ImageData {
 		var currentToken = ""
 
 		while index < data.count {
-
 			let currentByte = data[index]
 
 			if currentState == .rawContent && format == .P6 {
@@ -222,7 +221,7 @@ public extension PPM.ImageData {
 						rawData.append(v)
 					case .rawContent:
 						// Shouldn't get here - it should have been hijacked earlier
-						assert(false, "Shouldn't get here")
+						assertionFailure("Shouldn't get here")
 						throw PPM.ErrorType.unexpectedRawContentCode
 					}
 
@@ -246,23 +245,24 @@ public extension PPM.ImageData {
 			throw PPM.ErrorType.mismatchWidthHeightAndContent(width: width, height: height, actualByteCount: rawData.count)
 		}
 
+		// We want to map the levels within the ppm file to 0 -> 255 range
+		// The ppm file defines the maximum value for a pixel component, so
+		// we need to map the values from (0 -> levels) to (0 -> 255)
 		let levelsValue = Double(levels)
 
 		// Convert to 0->255 levels
-		let mappedData = rawData.map {
-			let map = UInt8((Double($0) / levelsValue) * 255)
-			return max(0, min(255, map))
+		let mappedData: [UInt8] = rawData.map {
+			let mapped = (Double($0) / levelsValue) * 255
+			let clamped = max(0, min(255, mapped))
+			return UInt8(clamped)
 		}
 		return try PPM.ImageData(rawBytes: Data(mappedData), width: width, height: height)
 	}
-
 }
-
 
 // MARK: - Writing PPM data
 
 public extension PPM.ImageData {
-
 	/// Write PPM image data to a file
 	/// - Parameters:
 	///   - data: The PPM image data
