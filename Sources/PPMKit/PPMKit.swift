@@ -52,5 +52,6 @@ public final class PPM {
 		case unableToCreateString
 		case unexpectedRawContentCode
 		case invalidDimensionsForData
+		case invalidRowOrColumn
 	}
 }

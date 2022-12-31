@@ -48,12 +48,12 @@ public extension PPM {
 		public let height: Int
 
 		/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
-		@inlinable public subscript(row: Int, column: Int) -> PPM.RGB? {
+		@inlinable public func pixelAt(row: Int, column: Int) throws -> PPM.RGB {
 			guard
 				row >= 0, row < height,
 				column >= 0, column < width
 			else {
-				return nil
+				throw PPM.ErrorType.invalidRowOrColumn
 			}
 			return data[(row * width) + column]
 		}
@@ -65,7 +65,7 @@ public extension PPM {
 
 		internal init(rgbData: [PPM.RGB], width: Int, height: Int) throws {
 			if rgbData.count != (width * height) {
-				throw ErrorType.invalidDimensionsForData
+				throw PPM.ErrorType.invalidDimensionsForData
 			}
 			self.data = rgbData
 			self.width = width

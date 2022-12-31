@@ -154,20 +154,20 @@ final class SwiftPPMDataTests: XCTestCase {
 		XCTAssertEqual(3, im.width)
 		XCTAssertEqual(2, im.height)
 
-		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 0), im[0, 0])
-		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 0), im[0, 1])
-		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 255), im[0, 2])
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 0), try im.pixelAt(row: 0, column: 0))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 0), try im.pixelAt(row: 0, column: 1))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 255), try im.pixelAt(row: 0, column: 2))
 
-		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 0), im[1, 0])
-		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 255), im[1, 1])
-		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 0), im[1, 2])
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 0), try im.pixelAt(row: 1, column: 0))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 255), try im.pixelAt(row: 1, column: 1))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 0), try im.pixelAt(row: 1, column: 2))
 
 		// Outside the image bounds
-		XCTAssertNil(im[-1, 0])
-		XCTAssertNil(im[0, -1])
-		XCTAssertNil(im[0, 3])
-		XCTAssertNil(im[1, -1])
-		XCTAssertNil(im[1, 3])
-		XCTAssertNil(im[2, 1])
+		XCTAssertThrowsError(try im.pixelAt(row: -1, column:  0))
+		XCTAssertThrowsError(try im.pixelAt(row: 0,  column: -1))
+		XCTAssertThrowsError(try im.pixelAt(row: 0,  column: 3))
+		XCTAssertThrowsError(try im.pixelAt(row: 1,  column: -1))
+		XCTAssertThrowsError(try im.pixelAt(row: 1,  column: 3))
+		XCTAssertThrowsError(try im.pixelAt(row: 2,  column: 1))
 	}
 }
