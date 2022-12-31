@@ -47,6 +47,17 @@ public extension PPM {
 		/// Image height (in pixels)
 		public let height: Int
 
+		/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
+		@inlinable public subscript(row: Int, column: Int) -> PPM.RGB? {
+			guard
+				row >= 0, row < height,
+				column >= 0, column < width
+			else {
+				return nil
+			}
+			return data[(row * width) + column]
+		}
+
 		/// Return the pixel data as a raw RGB byte array
 		public var rawBytes: Data {
 			Data(self.data.flatMap { [$0.r, $0.g, $0.b] })

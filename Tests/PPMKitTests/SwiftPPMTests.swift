@@ -147,3 +147,27 @@ final class SwiftPPMDataOnlyTests: XCTestCase {
 		XCTAssertEqual(d1, imageData)
 	}
 }
+
+final class SwiftPPMDataTests: XCTestCase {
+	func testSubscriptOffsets() throws {
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm2URL))
+		XCTAssertEqual(3, im.width)
+		XCTAssertEqual(2, im.height)
+
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 0), im[0, 0])
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 0), im[0, 1])
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 255), im[0, 2])
+
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 0), im[1, 0])
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 255), im[1, 1])
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 0), im[1, 2])
+
+		// Outside the image bounds
+		XCTAssertNil(im[-1, 0])
+		XCTAssertNil(im[0, -1])
+		XCTAssertNil(im[0, 3])
+		XCTAssertNil(im[1, -1])
+		XCTAssertNil(im[1, 3])
+		XCTAssertNil(im[2, 1])
+	}
+}
