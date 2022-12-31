@@ -32,24 +32,27 @@ import Foundation
 
 public extension PPM {
 	/// Read a CGImage from a PPM file. Handles both P3 and P6 formats
-	@inlinable static func readImage(_ fileURL: URL) throws -> CGImage {
+	/// - Parameter fileURL: The file to load
+	/// - Returns: A CGImage representation of the PPM file
+	@inlinable static func readImage(fileURL: URL) throws -> CGImage {
 		let data = try Data(contentsOf: fileURL)
-		return try Self.readImage(data)
+		return try Self.readImage(data: data)
 	}
 
 	/// Read a CGImage from PPM data. Handles both P3 and P6 formats
-	@inlinable static func readImage(_ data: Data) throws -> CGImage {
-		// Read the raw PPM data
-		let ppmData = try Self.readImageData(data)
-		return try Self.image(from: ppmData)
+	/// - Parameter data: The data containing the PPM image
+	/// - Returns: A CGImage representation of the PPM data
+	@inlinable static func readImage(data: Data) throws -> CGImage {
+		let ppmData = try PPM.ImageData.read(data: data)
+		return try Self.readImage(imageData: ppmData)
 	}
 
 	/// Read a CGImage from PPM ImageData
 	/// - Parameter imageData: Raw PPM image data
 	/// - Returns: A CGImage representation
-	static func image(from imageData: PPM.ImageData) throws -> CGImage {
+	static func readImage(imageData: PPM.ImageData) throws -> CGImage {
 		// Convert the raw data to an image
-		guard let provider = CGDataProvider(data: imageData.rawBytes() as CFData) else {
+		guard let provider = CGDataProvider(data: imageData.rawBytes as CFData) else {
 			throw ErrorType.invalidPPMData
 		}
 
@@ -82,8 +85,8 @@ public extension PPM {
 	///   - cgImage: The image to write
 	///   - fileURL: The file to write to
 	///   - format: The PPM file format
-	@inlinable static func writeImage(_ cgImage: CGImage, to fileURL: URL, format: Format) throws {
-		let data = try Self.writeImage(cgImage, format: format)
+	@inlinable static func writeImage(_ image: CGImage, to fileURL: URL, format: Format) throws {
+		let data = try Self.writeImage(image, format: format)
 		try data.write(to: fileURL)
 	}
 
@@ -92,9 +95,9 @@ public extension PPM {
 	///   - cgImage: The image to write
 	///   - format: The PPM format to use (P3, P6)
 	/// - Returns: Raw PPM data
-	static func writeImage(_ cgImage: CGImage, format: Format) throws -> Data {
+	static func writeImage(_ image: CGImage, format: Format) throws -> Data {
 		// Get the raw RGBA data from the image
-		let rawData = cgImage.toByteArrayRGBA()
+		let rawData = image.toByteArrayRGBA()
 		guard rawData.count > 0 else {
 			throw ErrorType.cannotConvertImageToByteArray
 		}
@@ -103,18 +106,17 @@ public extension PPM {
 		var rgbData: [PPM.RGB] = []
 		rgbData.reserveCapacity(rawData.count)
 		for offset in stride(from: 0, to: rawData.count, by: 4) {
-			rgbData.append(PPM.RGB(r: rawData[offset], g: rawData[offset+1], b: rawData[offset+2]))
+			rgbData.append(PPM.RGB(r: rawData[offset], g: rawData[offset + 1], b: rawData[offset + 2]))
 		}
 
 		// Now write the data
-		return try self.writeData(
-			try ImageData(rgbData: rgbData, width: cgImage.width, height: cgImage.height),
-			format: format
-		)
+		let ppmData = try ImageData(rgbData: rgbData, width: image.width, height: image.height)
+		return try ppmData.ppmData(format: format)
 	}
 }
 
 internal extension CGImage {
+	/// Convert a CGImage to an RGBA array
 	func toByteArrayRGBA() -> [UInt8] {
 		var bytes = [UInt8](repeating: 0, count: width * height * 4)
 		bytes.withUnsafeMutableBytes { ptr in
@@ -134,6 +136,5 @@ internal extension CGImage {
 		return bytes
 	}
 }
-
 
 #endif

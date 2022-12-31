@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
 	name: "PPMKit",
-	platforms: [.macOS(.v10_11), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)],
+	platforms: [.macOS(.v10_12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)],
 	products: [
 		.library(
 			name: "PPMKit",

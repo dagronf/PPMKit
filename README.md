@@ -16,13 +16,13 @@ Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux).
 
 ```swift
 let ppmData = Data(...)
-let cgImage = try PPM.load(ppmData)
+let cgImage = try PPM.readImage(data: ppmData)
 ```
 
 ### Load raw PPM image data from a file
 
 ```swift
-let imageData = try PPM.readFileURL(ppm1URL)
+let imageData: PPM.ImageData = try PPM.read(fileURL: ppm1URL)
 // width = imageData.width
 // height = imageData.height
 // rawRGBBytes = imageData.data 
@@ -36,14 +36,14 @@ NOTE: PPM doesn't support transparency, so any transparency information is lost.
 
 ```swift
 let cgImage = CGImage(...)
-let data = try PPM.write(cgImage, format: .P3)
+let data = try PPM.writeImage(cgImage, format: .P3)
 ```
 
 ### Write raw RGB data to a PPM file
 
 ```swift
 let imageData = PPM.ImageData(...)
-let data = try PPM.writeData(data: imageData, format: .P3)
+try imageData.write(format: .P3, fileURL: <some_url>)
 ```
 
 # License

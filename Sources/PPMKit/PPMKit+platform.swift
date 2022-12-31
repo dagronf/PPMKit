@@ -28,10 +28,10 @@ import Foundation
 #if os(macOS)
 
 import AppKit
-extension NSImage {
+public extension NSImage {
 	/// Load an NSImage from PPM data
 	convenience init?(ppmData: Data) {
-		guard let cgImage = try? PPM.readImage(ppmData) else {
+		guard let cgImage = try? PPM.readImage(data: ppmData) else {
 			return nil
 		}
 
@@ -45,9 +45,9 @@ extension NSImage {
 #elseif os(iOS) || os(tvOS) || os(watchOS)
 
 import UIKit
-extension UIImage {
+public extension UIImage {
 	convenience init?(ppmData: Data) {
-		guard let cgImage = try? PPM.readImage(ppmData) else {
+		guard let cgImage = try? PPM.readImage(data: ppmData) else {
 			return nil
 		}
 		self.init(cgImage: cgImage)
