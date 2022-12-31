@@ -1,6 +1,6 @@
 # PPMKit
 
-Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, Linux).
+Simple read/write PPM files (P3/P6) in Swift (macOS, iOS, tvOS, watchOS, macCatalyst, Linux).
 
 <p align="center">
     <img src="https://img.shields.io/github/v/tag/dagronf/PPMKit" />

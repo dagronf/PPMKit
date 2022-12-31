@@ -251,4 +251,12 @@ final class SwiftPPMDataTests: XCTestCase {
 		XCTAssertThrowsError(try im.pixelAt(row: 1,  column: 3))
 		XCTAssertThrowsError(try im.pixelAt(row: 2,  column: 1))
 	}
+
+	func testVerifyScaleLevels() throws {
+		// This PPM image has levels set to 15
+		let im = try XCTUnwrap(PPM.read(fileURL: ppm1URL))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 255), try im.pixelAt(row: 0, column: 3))
+		// A value of 7 should map (7/15)*255 == 119
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: UInt8((7.0/15.0)*255)), try im.pixelAt(row: 1, column: 1))
+	}
 }
