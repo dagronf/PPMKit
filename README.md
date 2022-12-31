@@ -46,6 +46,31 @@ let imageData = PPM.ImageData(...)
 try imageData.write(format: .P3, fileURL: <some_url>)
 ```
 
+## Linux support
+
+* Linux only supports very naive color conversions between RGB-CMYK-Gray.
+
+### To build/test linux support using a mac
+
+See: [Testing Swift packages on Linux using Docker](https://oleb.net/2020/swift-docker-linux/)
+
+1. Install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop) on your mac
+2. Make sure that docker is running (or else the next command will fail with a weird or no error message)
+3. Run the following command in the directory you want to mirror in your linux 
+	
+```bash
+docker run --rm --privileged --interactive --tty --volume "$(pwd):/src" --workdir "/src" swift:latest
+```
+
+Now, from within the docker container, run 
+
+```bash
+swift build
+swift test
+```
+
+Note that the /src directory in the Linux container is a direct mirror of the current directory on the host OS, not a copy. If you delete a file in /src in the Linux container, that file will be gone on the host OS, too.
+
 # License
 
 ```
