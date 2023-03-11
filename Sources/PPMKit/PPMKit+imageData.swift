@@ -28,6 +28,21 @@ import Foundation
 public extension PPM {
 	/// An RGB pixel representation
 	struct RGB: Equatable {
+		/// Create a pixel with rgb values in 0 -> 255
+		public init(r: UInt8, g: UInt8, b: UInt8) {
+			self.r = r
+			self.g = g
+			self.b = b
+		}
+
+		/// Create a pixel with fractional rgb values clamped in 0 -> 1
+		public init(rf: Double, gf: Double, bf: Double) {
+			let r = min(1.0, max(0.0, rf))
+			let g = min(1.0, max(0.0, gf))
+			let b = min(1.0, max(0.0, bf))
+			self.init(r: UInt8(r * 255), g: UInt8(g * 255), b: UInt8(b * 255))
+		}
+
 		/// red component
 		public let r: UInt8
 		/// green component

@@ -259,4 +259,9 @@ final class SwiftPPMDataTests: XCTestCase {
 		// A value of 7 should map (7/15)*255 == 119
 		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: UInt8((7.0/15.0)*255)), try im.pixelAt(row: 1, column: 1))
 	}
+
+	func testPPMFractionalValue() throws {
+		let v = PPM.RGB(rf: 2.0, gf: 0.2, bf: -0.1)
+		XCTAssertEqual(v, PPM.RGB(rf: 1.0, gf: 0.2, bf: 0.0))
+	}
 }

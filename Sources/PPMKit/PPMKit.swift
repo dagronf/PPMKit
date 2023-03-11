@@ -54,4 +54,11 @@ public final class PPM {
 		case invalidDimensionsForData
 		case invalidRowOrColumn
 	}
+
+	/// Create a PPM image from raw PPM pixels
+	///
+	/// The size of the rgbData array must be equal to width * height
+	public static func image(rgbData: [PPM.RGB], width: Int, height: Int) throws -> PPM.ImageData {
+		try PPM.ImageData(rgbData: rgbData, width: width, height: height)
+	}
 }
