@@ -29,12 +29,12 @@ import Foundation
 
 import AppKit
 public extension NSImage {
-	/// Create an NSImage from a PPM.ImageData
-	convenience init?(ppmImageData: PPM.ImageData) {
-		guard let cgImage = try? ppmImageData.cgImage() else { return nil }
+	/// Create an NSImage from a PPM.Image
+	convenience init?(ppmImage: PPM.Image) {
+		guard let cgImage = try? ppmImage.cgImage() else { return nil }
 		self.init(
 			cgImage: cgImage,
-			size: NSSize(width: ppmImageData.width, height: ppmImageData.height)
+			size: NSSize(width: ppmImage.width, height: ppmImage.height)
 		)
 	}
 
@@ -63,9 +63,9 @@ public extension NSImage {
 import UIKit
 public extension UIImage {
 
-	/// Create a UIImage from a PPM.ImageData
-	convenience init?(ppmImageData: PPM.ImageData) {
-		guard let cgImage = try? ppmImageData.cgImage() else { return nil }
+	/// Create a UIImage from a PPM.Image
+	convenience init?(ppmImage: PPM.Image) {
+		guard let cgImage = try? ppmImage.cgImage() else { return nil }
 		self.init(cgImage: cgImage)
 	}
 

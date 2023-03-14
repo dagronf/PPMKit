@@ -711,7 +711,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <ikImageView wantsLayer="YES" supportsDragAndDrop="NO" doubleClickOpensImageEditPanel="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zQV-RN-wcK">
+                            <ikImageView wantsLayer="YES" zoomFactor="0.0" supportsDragAndDrop="NO" doubleClickOpensImageEditPanel="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zQV-RN-wcK">
                                 <rect key="frame" x="20" y="20" width="440" height="230"/>
                                 <color key="backgroundColor" name="underPageBackgroundColor" catalog="System" colorSpace="catalog"/>
                             </ikImageView>

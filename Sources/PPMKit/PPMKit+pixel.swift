@@ -1,5 +1,5 @@
 //
-//  PPMKit.swift
+//  PPMKit+pixel.swift
 //
 //  Copyright © 2022 Darren Ford. All rights reserved.
 //
@@ -23,43 +23,44 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-// http://www.paulbourke.net/dataformats/ppm/
-// http://people.uncw.edu/tompkinsj/112/texnh/assignments/imageFormat.html
-
 import Foundation
 
-public final class PPM {
-	private init() {}
+public extension PPM {
+	/// An RGB pixel representation
+	struct RGB: Equatable {
+		/// Standard black
+		public static let black = RGB(r: 0, g: 0, b: 0)
+		/// Standard white
+		public static let white = RGB(r: 255, g: 255, b: 255)
 
-	/// Writing formats
-	public enum Format {
-		case P3
-		case P6
-	}
+		/// Create a pixel with rgb values in 0 -> 255
+		/// - Parameters:
+		///   - r: red component
+		///   - g: green component
+		///   - b: blue component
+		public init(r: UInt8, g: UInt8, b: UInt8) {
+			self.r = r
+			self.g = g
+			self.b = b
+		}
 
-	/// Errors throws
-	public enum ErrorType: Error {
-		case invalidPPMHeaderType(actualBOM: String)
-		case invalidData
-		case invalidWidth(actualWidthString: String)
-		case invalidHeight(actualHeightString: String)
-		case invalidLevels(actualLevelsString: String)
-		case cannotConvertImageToByteArray
-		case invalidImageContent(actualValueString: String)
-		case mismatchWidthHeightAndContent(width: Int, height: Int, actualByteCount: Int)
-		case invalidPPMData
-		case cannotCreateImage
-		case unableToCreateString
-		case unexpectedRawContentCode
-		case invalidDimensionsForData
-		case invalidRowOrColumn
-		case pixelColorCannotBeNil
-	}
+		/// Create a pixel with fractional rgb values clamped in 0 -> 1
+		/// - Parameters:
+		///   - r: red component
+		///   - g: green component
+		///   - b: blue component
+		public init(rf: Double, gf: Double, bf: Double) {
+			let r = min(1.0, max(0.0, rf))
+			let g = min(1.0, max(0.0, gf))
+			let b = min(1.0, max(0.0, bf))
+			self.init(r: UInt8(r * 255), g: UInt8(g * 255), b: UInt8(b * 255))
+		}
 
-	/// Create a PPM image from raw PPM pixels
-	///
-	/// The size of the rgbData array must be equal to width * height
-	@inlinable public static func image(rgbData: [PPM.RGB], width: Int, height: Int) throws -> PPM.Image {
-		try PPM.Image(rgbData: rgbData, width: width, height: height)
+		/// red component
+		public let r: UInt8
+		/// green component
+		public let g: UInt8
+		/// blue component
+		public let b: UInt8
 	}
 }

@@ -43,25 +43,25 @@ public extension PPM {
 	/// - Parameter data: The data containing the PPM image
 	/// - Returns: A CGImage representation of the PPM data
 	@inlinable static func readImage(data: Data) throws -> CGImage {
-		let ppmData = try PPM.ImageData.read(data: data)
-		return try Self.readImage(imageData: ppmData)
+		let ppmData = try PPM.Image.read(data: data)
+		return try Self.convertToCGImage(ppmData)
 	}
 
-	/// Read a CGImage from PPM ImageData
+	/// Read a CGImage from a PPM image
 	/// - Parameter imageData: Raw PPM image data
 	/// - Returns: A CGImage representation
-	static func readImage(imageData: PPM.ImageData) throws -> CGImage {
+	static func convertToCGImage(_ image: PPM.Image) throws -> CGImage {
 		// Convert the raw data to an image
-		guard let provider = CGDataProvider(data: imageData.rawBytes as CFData) else {
+		guard let provider = CGDataProvider(data: image.rawBytes as CFData) else {
 			throw ErrorType.invalidPPMData
 		}
 
 		guard let cgImage = CGImage(
-			width: imageData.width,
-			height: imageData.height,
+			width: image.width,
+			height: image.height,
 			bitsPerComponent: 8,
 			bitsPerPixel: 24,
-			bytesPerRow: imageData.width * 3,
+			bytesPerRow: image.width * 3,
 			space: CGColorSpaceCreateDeviceRGB(),
 			bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
 			provider: provider,
@@ -110,15 +110,15 @@ public extension PPM {
 		}
 
 		// Now write the data
-		let ppmData = try ImageData(rgbData: rgbData, width: image.width, height: image.height)
+		let ppmData = try Image(rgbData: rgbData, width: image.width, height: image.height)
 		return try ppmData.ppmData(format: format)
 	}
 }
 
-public extension PPM.ImageData {
+public extension PPM.Image {
 	/// Return a CGImage representation of this PPM image
 	@inlinable func cgImage() throws -> CGImage {
-		try PPM.readImage(imageData: self)
+		try PPM.convertToCGImage(self)
 	}
 }
 

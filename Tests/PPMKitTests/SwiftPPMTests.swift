@@ -85,6 +85,25 @@ final class SwiftPPMTestsUsingImageDataOnly: XCTestCase {
 		XCTAssertEqual(320, imd_p3.width)
 		XCTAssertEqual(200, imd_p3.height)
 	}
+
+	func testSimpleCreateAndModify() throws {
+		var im = PPM.Image(width: 3, height: 2)
+		XCTAssertEqual(PPM.RGB.black, im[0, 0])
+		XCTAssertEqual(PPM.RGB.black, im[0, 1])
+		XCTAssertEqual(PPM.RGB.black, im[0, 2])
+		XCTAssertEqual(PPM.RGB.black, im[1, 0])
+		XCTAssertEqual(PPM.RGB.black, im[1, 1])
+		XCTAssertEqual(PPM.RGB.black, im[1, 2])
+
+		im[0, 1] = .white
+		im[1, 2] = .white
+		XCTAssertEqual(PPM.RGB.black, im[0, 0])
+		XCTAssertEqual(PPM.RGB.white, im[0, 1])
+		XCTAssertEqual(PPM.RGB.black, im[0, 2])
+		XCTAssertEqual(PPM.RGB.black, im[1, 0])
+		XCTAssertEqual(PPM.RGB.black, im[1, 1])
+		XCTAssertEqual(PPM.RGB.white, im[1, 2])
+	}
 }
 
 #if canImport(CoreGraphics)
@@ -197,7 +216,7 @@ final class SwiftPPMDataOnlyTests: XCTestCase {
 	func testCommentFail() throws {
 		let ppm6URL = try! XCTUnwrap(Bundle.module.url(forResource: "P3_3x2_L255_comment_fail", withExtension: "ppm"))
 
-		let im = try XCTUnwrap(PPM.ImageData.read(fileURL: ppm6URL))
+		let im = try XCTUnwrap(PPM.Image.read(fileURL: ppm6URL))
 		XCTAssertEqual(3, im.width)
 		XCTAssertEqual(2, im.height)
 		XCTAssertEqual(3 * 2, im.data.count)
@@ -209,23 +228,23 @@ final class SwiftPPMDataOnlyTests: XCTestCase {
 	}
 
 	func testWriteData_p3() throws {
-		let imageData = try PPM.ImageData.read(fileURL: ppm3URL)
-		let ppmData = try imageData.ppmData(format: .P3)
+		let image = try PPM.Image.read(fileURL: ppm3URL)
+		let ppmData = try image.ppmData(format: .P3)
 		let ppmDataURL = TempFileContainer.temporaryFileWithName("writtenrawdata_p3.ppm")
 		try ppmData.write(to: ppmDataURL)
 
-		let d1 = try PPM.ImageData.read(fileURL: ppmDataURL)
-		XCTAssertEqual(d1, imageData)
+		let d1 = try PPM.Image.read(fileURL: ppmDataURL)
+		XCTAssertEqual(d1, image)
 	}
 
 	func testWriteData_p6() throws {
-		let imageData = try PPM.ImageData.read(fileURL: ppm3URL)
-		let ppmData = try imageData.ppmData(format: .P6)
+		let image = try PPM.Image.read(fileURL: ppm3URL)
+		let ppmData = try image.ppmData(format: .P6)
 		let ppmDataURL = TempFileContainer.temporaryFileWithName("writtenrawdata_p6.ppm")
 		try ppmData.write(to: ppmDataURL)
 
-		let d1 = try PPM.ImageData.read(fileURL: ppmDataURL)
-		XCTAssertEqual(d1, imageData)
+		let d1 = try PPM.Image.read(fileURL: ppmDataURL)
+		XCTAssertEqual(d1, image)
 	}
 }
 
@@ -235,29 +254,29 @@ final class SwiftPPMDataTests: XCTestCase {
 		XCTAssertEqual(3, im.width)
 		XCTAssertEqual(2, im.height)
 
-		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 0), try im.pixelAt(row: 0, column: 0))
-		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 0), try im.pixelAt(row: 0, column: 1))
-		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 255), try im.pixelAt(row: 0, column: 2))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 0), try im.get(row: 0, column: 0))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 0), try im.get(row: 0, column: 1))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 255), try im.get(row: 0, column: 2))
 
-		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 0), try im.pixelAt(row: 1, column: 0))
-		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 255), try im.pixelAt(row: 1, column: 1))
-		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 0), try im.pixelAt(row: 1, column: 2))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 0), try im.get(row: 1, column: 0))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 255, b: 255), try im.get(row: 1, column: 1))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 0, b: 0), try im.get(row: 1, column: 2))
 
 		// Outside the image bounds
-		XCTAssertThrowsError(try im.pixelAt(row: -1, column:  0))
-		XCTAssertThrowsError(try im.pixelAt(row: 0,  column: -1))
-		XCTAssertThrowsError(try im.pixelAt(row: 0,  column: 3))
-		XCTAssertThrowsError(try im.pixelAt(row: 1,  column: -1))
-		XCTAssertThrowsError(try im.pixelAt(row: 1,  column: 3))
-		XCTAssertThrowsError(try im.pixelAt(row: 2,  column: 1))
+		XCTAssertThrowsError(try im.get(row: -1, column:  0))
+		XCTAssertThrowsError(try im.get(row: 0,  column: -1))
+		XCTAssertThrowsError(try im.get(row: 0,  column: 3))
+		XCTAssertThrowsError(try im.get(row: 1,  column: -1))
+		XCTAssertThrowsError(try im.get(row: 1,  column: 3))
+		XCTAssertThrowsError(try im.get(row: 2,  column: 1))
 	}
 
 	func testVerifyScaleLevels() throws {
 		// This PPM image has levels set to 15
 		let im = try XCTUnwrap(PPM.read(fileURL: ppm1URL))
-		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 255), try im.pixelAt(row: 0, column: 3))
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 255), try im.get(row: 0, column: 3))
 		// A value of 7 should map (7/15)*255 == 119
-		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: UInt8((7.0/15.0)*255)), try im.pixelAt(row: 1, column: 1))
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: UInt8((7.0/15.0)*255)), try im.get(row: 1, column: 1))
 	}
 
 	func testPPMFractionalValue() throws {

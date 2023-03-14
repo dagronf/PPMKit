@@ -1,5 +1,5 @@
 //
-//  PPMKit+imageData.swift
+//  PPMKit+image.swift
 //
 //  Copyright © 2022 Darren Ford. All rights reserved.
 //
@@ -26,83 +26,119 @@
 import Foundation
 
 public extension PPM {
-	/// An RGB pixel representation
-	struct RGB: Equatable {
-		/// Create a pixel with rgb values in 0 -> 255
-		public init(r: UInt8, g: UInt8, b: UInt8) {
-			self.r = r
-			self.g = g
-			self.b = b
-		}
-
-		/// Create a pixel with fractional rgb values clamped in 0 -> 1
-		public init(rf: Double, gf: Double, bf: Double) {
-			let r = min(1.0, max(0.0, rf))
-			let g = min(1.0, max(0.0, gf))
-			let b = min(1.0, max(0.0, bf))
-			self.init(r: UInt8(r * 255), g: UInt8(g * 255), b: UInt8(b * 255))
-		}
-
-		/// red component
-		public let r: UInt8
-		/// green component
-		public let g: UInt8
-		/// blue component
-		public let b: UInt8
-	}
-}
-
-public extension PPM {
 	/// Raw PPM image data
-	struct ImageData: Equatable {
+	struct Image: Equatable {
 		/// Raw RGB byte array
-		public let data: [PPM.RGB]
+		public var data: [PPM.RGB]
 		/// Image width (in pixels)
 		public let width: Int
 		/// Image height (in pixels)
 		public let height: Int
 
-		/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
-		@inlinable public func pixelAt(row: Int, column: Int) throws -> PPM.RGB {
-			guard
-				row >= 0, row < self.height,
-				column >= 0, column < self.width
-			else {
-				throw PPM.ErrorType.invalidRowOrColumn
-			}
-			return self.data[(row * self.width) + column]
+		/// Is the row/column valid for the image data?
+		@inlinable func isValidIndex(row: Int, column: Int) -> Bool {
+			return row >= 0 && row < self.height && column >= 0 && column < self.width
+		}
+	}
+}
+
+public extension PPM.Image {
+	/// Create an empty image with a default value (black)
+	/// - Parameters:
+	///   - width: The image width (in pixels)
+	///   - height: The image height (in pixels)
+	///   - backgroundColor: The default color for the image
+	init(width: Int, height: Int, backgroundColor: PPM.RGB = .black) {
+		self.data = [PPM.RGB].init(repeating: backgroundColor, count: width * height)
+		self.width = width
+		self.height = height
+	}
+
+	/// Create imagedata from a PPM.RGB array
+	/// - Parameters:
+	///   - rgbData: An array of RGB pixels (must be width \* height in length)
+	///   - width: The image width (in pixels)
+	///   - height: The image height (in pixels)
+	init(rgbData: [PPM.RGB], width: Int, height: Int) throws {
+		if rgbData.count != (width * height) {
+			throw PPM.ErrorType.invalidDimensionsForData
+		}
+		self.data = rgbData
+		self.width = width
+		self.height = height
+	}
+
+	/// Create imagedata from a raw RGB bytes array
+	/// - Parameters:
+	///   - rawBytes: An array bytes representing RRGGBB pixels (must be width \* height \* 3 in length)
+	///   - width: The image width (in pixels)
+	///   - height: The image height (in pixels)
+	init(rawBytes: Data, width: Int, height: Int) throws {
+		if rawBytes.count != (width * height * 3) {
+			throw PPM.ErrorType.invalidDimensionsForData
 		}
 
-		/// Return the pixel data as a raw RGB byte array
-		public var rawBytes: Data {
-			Data(self.data.flatMap { [$0.r, $0.g, $0.b] })
+		var result: [PPM.RGB] = []
+		result.reserveCapacity(width * height)
+		for step in stride(from: 0, to: rawBytes.count, by: 3) {
+			result.append(PPM.RGB(r: rawBytes[step], g: rawBytes[step + 1], b: rawBytes[step + 2]))
 		}
 
-		internal init(rgbData: [PPM.RGB], width: Int, height: Int) throws {
-			if rgbData.count != (width * height) {
-				throw PPM.ErrorType.invalidDimensionsForData
-			}
-			self.data = rgbData
-			self.width = width
-			self.height = height
+		self.width = width
+		self.height = height
+		self.data = result
+	}
+}
+
+// MARK: - Get/Set
+
+public extension PPM.Image {
+	/// Return the pixel data as a raw RGB byte array
+	var rawBytes: Data {
+		Data(self.data.flatMap { [$0.r, $0.g, $0.b] })
+	}
+
+	/// Returns a 2d array (rows of columns) containing the pixels in the image
+	var pixelMatrix: [[PPM.RGB]] {
+		self.data.chunked(into: self.width)
+	}
+
+	/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
+	@inlinable func get(row: Int, column: Int) throws -> PPM.RGB {
+		guard isValidIndex(row: row, column: column) else { throw PPM.ErrorType.invalidRowOrColumn }
+		return self._get(row: row, column: column)
+	}
+
+	/// Set the color for the pixel at row/column
+	mutating func set(_ row: Int, _ column: Int, _ color: PPM.RGB?) throws {
+		guard let color = color else { throw PPM.ErrorType.pixelColorCannotBeNil }
+		guard self.isValidIndex(row: row, column: column) else { throw PPM.ErrorType.invalidRowOrColumn }
+		self._set(row, column, color)
+	}
+
+	/// Basic 2d subscript for getting/setting the pixel for the specified row/col
+	@inlinable subscript(row: Int, column: Int) -> PPM.RGB {
+		get {
+			assert(isValidIndex(row: row, column: column))
+			return self._get(row: row, column: column)
 		}
-
-		/// Create imagedata from a raw RGB array
-		internal init(rawBytes: Data, width: Int, height: Int) throws {
-			if rawBytes.count != (width * height * 3) {
-				throw ErrorType.invalidDimensionsForData
-			}
-
-			var result: [PPM.RGB] = []
-			result.reserveCapacity(width * height)
-			for step in stride(from: 0, to: rawBytes.count, by: 3) {
-				result.append(RGB(r: rawBytes[step], g: rawBytes[step + 1], b: rawBytes[step + 2]))
-			}
-
-			self.width = width
-			self.height = height
-			self.data = result
+		set {
+			assert(isValidIndex(row: row, column: column))
+			self._set(row, column, newValue)
 		}
+	}
+}
+
+internal extension PPM.Image {
+	/// Returns the pixel value at the specified row/column, or nil if the row or column is out of bounds
+	@inlinable @inline(__always) func _get(row: Int, column: Int) -> PPM.RGB {
+		assert(isValidIndex(row: row, column: column))
+		return self.data[(row * self.width) + column]
+	}
+	/// Set the color for the pixel at row/column
+	@inlinable @inline(__always) mutating func _set(_ row: Int, _ column: Int, _ color: PPM.RGB) {
+		assert(self.isValidIndex(row: row, column: column))
+		self.data[(row * self.width) + column] = color
 	}
 }
 
@@ -112,23 +148,23 @@ public extension PPM {
 	/// Load raw PPM Image data from a file URL. Handles both P3 and P6 formats
 	/// - Parameter fileURL: The file containing the PPM data
 	/// - Returns: PPM image data
-	@inlinable static func read(fileURL: URL) throws -> PPM.ImageData {
-		try PPM.ImageData.read(fileURL: fileURL)
+	@inlinable static func read(fileURL: URL) throws -> PPM.Image {
+		try PPM.Image.read(fileURL: fileURL)
 	}
 
 	/// Load raw PPM Image data from PPM data. Handles both P3 and P6 formats
 	/// - Parameter data: The data containing the PPM data
 	/// - Returns: PPM image data
-	@inlinable static func read(data: Data) throws -> PPM.ImageData {
-		try PPM.ImageData.read(data: data)
+	@inlinable static func read(data: Data) throws -> PPM.Image {
+		try PPM.Image.read(data: data)
 	}
 }
 
-public extension PPM.ImageData {
+public extension PPM.Image {
 	/// Load raw PPM Image data from a file URL. Handles both P3 and P6 formats
 	/// - Parameter fileURL: The file containing the PPM data
 	/// - Returns: PPM image data
-	@inlinable static func read(fileURL: URL) throws -> PPM.ImageData {
+	@inlinable static func read(fileURL: URL) throws -> PPM.Image {
 		assert(fileURL.isFileURL)
 		let data = try Data(contentsOf: fileURL)
 		return try Self.read(data: data)
@@ -137,7 +173,7 @@ public extension PPM.ImageData {
 	/// Load raw PPM Image data from PPM data. Handles both P3 and P6 formats
 	/// - Parameter data: The data containing the PPM data
 	/// - Returns: PPM image data
-	static func read(data: Data) throws -> PPM.ImageData {
+	static func read(data: Data) throws -> PPM.Image {
 		var width = -1
 		var height = -1
 		var levels = -1
@@ -271,13 +307,13 @@ public extension PPM.ImageData {
 			let clamped = max(0, min(255, mapped))
 			return UInt8(clamped)
 		}
-		return try PPM.ImageData(rawBytes: Data(mappedData), width: width, height: height)
+		return try PPM.Image(rawBytes: Data(mappedData), width: width, height: height)
 	}
 }
 
 // MARK: - Writing PPM data
 
-public extension PPM.ImageData {
+public extension PPM.Image {
 	/// Write PPM image data to a file
 	/// - Parameters:
 	///   - data: The PPM image data

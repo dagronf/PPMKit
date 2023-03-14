@@ -22,10 +22,10 @@ let cgImage = try PPM.readImage(data: ppmData)
 ### Load raw PPM image data from a file
 
 ```swift
-let imageData: PPM.ImageData = try PPM.read(fileURL: ppm1URL)
-// width = imageData.width
-// height = imageData.height
-// rawRGBBytes = imageData.data 
+let image: PPM.Image = try PPM.read(fileURL: ppm1URL)
+// width = image.width
+// height = image.height
+// rawRGBBytes = image.data 
 ```
 
 ## Write a PPM file
@@ -42,8 +42,21 @@ let data = try PPM.writeImage(cgImage, format: .P3)
 ### Write raw RGB data to a PPM file
 
 ```swift
-let imageData = PPM.ImageData(...)
-try imageData.write(format: .P3, fileURL: <some_url>)
+let image = PPM.Image(...)
+try image.write(format: .P3, fileURL: <some_url>)
+```
+
+### Create PPM data from raw pixels
+
+```swift
+public static func image(rgbData: [PPM.RGB], width: Int, height: Int) throws -> PPM.Image
+```
+
+Note: The number of pixels in the rgbData array *must* be equal to `width` * `height`
+
+```swift
+let pixels: [PPM.RGB] = [ ... ]
+let image = PPM.image(rgbData: pixels, width: 100, height: 100)
 ```
 
 ## Linux support
