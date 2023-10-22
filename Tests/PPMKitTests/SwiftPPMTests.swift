@@ -222,6 +222,23 @@ final class SwiftPPMDataOnlyTests: XCTestCase {
 		XCTAssertEqual(3 * 2, im.data.count)
 	}
 
+	func testImportP3ImportWithoutEOF() throws {
+		// The file 'p3test_no_eol' doesn't have a line feed AFTER the last line
+		// While this doesn't match the spec (and macOS preview barfs reading it) lets be nice to our
+		// users for a change
+		let ppm3URL = try! XCTUnwrap(Bundle.module.url(forResource: "p3test_no_eol", withExtension: "ppm"))
+		let im = try PPM.read(fileURL: ppm3URL)
+		XCTAssertEqual(4, im.width)
+		XCTAssertEqual(4, im.height)
+
+		XCTAssertEqual(PPM.RGB.black, im[0, 0])
+		XCTAssertEqual(PPM.RGB.black, im[1, 0])
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 255), im[0, 3])
+		XCTAssertEqual(PPM.RGB(r: 0, g: 255, b: 119), im[1, 1])
+		XCTAssertEqual(PPM.RGB(r: 255, g: 0, b: 255), im[3, 0])
+		XCTAssertEqual(PPM.RGB.black, im[3, 3])
+	}
+
 	func testInvalidContent() throws {
 		let ppm6URL = try! XCTUnwrap(Bundle.module.url(forResource: "badly_formatted", withExtension: "ppm"))
 		XCTAssertThrowsError(try PPM.read(fileURL: ppm6URL))

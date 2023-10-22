@@ -291,6 +291,16 @@ public extension PPM.Image {
 			index += 1
 		}
 
+		if currentToken.count > 0 {
+			// It would appear that our file doesn't end with a whitespace, which technically
+			// invalidates the file (the spec explicitly indicates each content line MUST end with a newline)
+			// Let be lenient and support this case
+			guard let v = Int(currentToken) else {
+				throw PPM.ErrorType.invalidImageContent(actualValueString: currentToken)
+			}
+			rawData.append(v)
+		}
+
 		// Validate the content
 		guard width * height * 3 == rawData.count else {
 			throw PPM.ErrorType.mismatchWidthHeightAndContent(width: width, height: height, actualByteCount: rawData.count)
